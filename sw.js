@@ -25,7 +25,7 @@ self.addEventListener('install', e => {
     const offlineModeCacheFiles = caches.open(CACHE_SATIC_NAME)
         .then(cache => {
             return cache.addAll([
-                '/',
+                '/JuanAlvarezU2-P3P4',
                 'index.html',
                 'css/page.css',
                 'img/inicio.jpg',
