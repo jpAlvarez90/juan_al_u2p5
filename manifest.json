@@ -1,7 +1,7 @@
 {
     "shortname": "PWA",
     "name": "Progesive Web App",
-    "start_url": "index.html",
+    "start_url": "/JuanAlvarezU2-P3P4/",
     "display": "standalone",
     "orientation": "portrait",
     "background_color": "#3498db",
