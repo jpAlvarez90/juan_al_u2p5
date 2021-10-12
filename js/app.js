@@ -1,7 +1,15 @@
-if (navigator.serviceWorker) {
-    navigator.serviceWorker.register('/sw.js')
-}
+let url = window.location.href
+let swRedirect = 'JuanAlvarezU2-P3P4/sw.js'
 
+if (navigator.serviceWorker) {
+    console.log('SW: Esta disponible')
+    if (url.includes('localhost'))
+        swRedirect = '/sw.js'
+
+    navigator.serviceWorker.register(swRedirect)
+} else {
+    console.log('SW: No esta disponible, cambia de navegador');
+}
 /*
 if (window.caches) {
     console.log("Tenemos caches");
