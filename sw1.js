@@ -25,6 +25,7 @@ self.addEventListener('install', e => {
         .then(cache => {
             return cache.addAll([
                 '/juan_al_u2p5',
+                '/juan_al_u2p5/',
                 '/juan_al_u2p5/index.html',
                 '/juan_al_u2p5/css/page.css',
                 '/juan_al_u2p5/img/inicio.jpg',

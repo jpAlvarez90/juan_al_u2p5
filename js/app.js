@@ -1,5 +1,5 @@
 let url = window.location.href
-let swRedirect = 'juan_al_u2p5/sw1.js'
+let swRedirect = '/juan_al_u2p5/sw1.js'
 
 if (navigator.serviceWorker) {
     console.log('SW: Esta disponible')
