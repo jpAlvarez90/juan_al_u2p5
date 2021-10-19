@@ -1,11 +1,10 @@
 let url = window.location.href
-let swRedirect = 'juan_al_u2p5/sw.js'
+let swRedirect = 'juan_al_u2p5/sw1.js'
 
 if (navigator.serviceWorker) {
     console.log('SW: Esta disponible')
     console.log(url)
-    if (url.includes('localhost'))
-        swRedirect = 'juan_al_u2p5/sw.js'
+    //if (url.includes('localhost')) swRedirect = 'juan_al_u2p5/sw1.js'
 
     navigator.serviceWorker.register(swRedirect)
 } else {
