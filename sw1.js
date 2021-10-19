@@ -1,49 +1,108 @@
-self.addEventListener("install", () => {
-    console.log("SW: Instalado");
-});
+const CACHE_NAME = 'cache_v1'
+const CACHE_SATIC_NAME = 'static_v4'
+const CACHE_DINAMIC_NAME = 'dynamic_v1'
+const CACHE_INMUTABLE_NAME = 'inmutable_v1'
 
-self.addEventListener("fetch", e => {
-    /* const respOff = new Response(`
-        
-            Bienvenido a la pagina OfflineAudioCompletionEvent
- 
-            Para poder usar la app necesitas conexion a internet
-        
-        `); */
+function cleanCache(cache_name, sizeItems) {
+    caches.open(cache_name)
+        .then(cache => {
+            cache.keys()
+                .then(keys => {
+                    if (keys.length >= sizeItems) {
+                        cache.delete(keys[0])
+                            .then(() => {
+                                cleanCache(cache_name, sizeItems)
+                            })
+                    }
+                })
+        })
+}
 
-    /*   const respOffHtml = new Response(`
-            <!DOCTYPE html>
-            <html lang="en">
-            <head>
-                <meta charset="UTF-8">
-                <meta http-equiv="X-UA-Compatible" content="IE=edge">
-                <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
-                <link rel="stylesheet" href="css/page.css" >
-                <title>Mi PWA | Caches</title>
-            </head>
-            <body>
-                <h1>Bienvenido a la pagina Offline </h1>
-                <p> Para poder usar la app necesitas conexion a internet </p>
-            </body>
-            </html>
-        `,{
-                headers:{
-                    'Content-Type': 'text/html'
+self.addEventListener('install', e => {
+    console.log('SW: Instalado')
+
+    const offlineModeCacheFiles = caches.open(CACHE_SATIC_NAME)
+        .then(cache => {
+            return cache.addAll([
+                '/juan_al_u2p5',
+                '/juan_al_u2p5/index.html',
+                '/juan_al_u2p5/css/page.css',
+                '/juan_al_u2p5/img/inicio.jpg',
+                '/juan_al_u2p5/img/default.jpg',
+                '/juan_al_u2p5/js/app.js',
+                '/juan_al_u2p5/pages/view_offline.html'
+            ])
+        })
+
+    const inmutables = caches.open(CACHE_INMUTABLE_NAME)
+        .then(cache => {
+            return cache.addAll([
+                'https://cdn.jsdelivr.net/npm/bootstrap@5.1.1/dist/css/bootstrap.min.css',
+            ])
+        })
+
+    e.waitUntil(Promise.all([offlineModeCacheFiles, inmutables]))
+})
+
+self.addEventListener('activate', e => {
+    const cachesDelete = caches.keys()
+    .then(keys => {
+        keys.forEach(key => {
+            if (key !== CACHE_SATIC_NAME && key.includes('static')) {
+                return caches.delete(key)
             }
-          }) */
-    // marca error porque necesitamos conexion para hacer fetch
-    const respOffFile = fetch('pages/view-offline.html');
-
-    const resp = fetch(e.request)
-        .catch(() => {
-            console.log("SW: Error en la peticion");
-            return respOffFile;
-        });
-
-
-    // console.log(e.request.url);
-
-    e.respondWith(resp)
-
+        })
+    })
+    e.waitUntil(cachesDelete)
 });
+
+self.addEventListener('fetch', e => {
+    // Solo cache
+    //e.respondWith(caches.match(e.request))
+
+    // Primero cache y despues red
+    
+    const res = caches.match(e.request).then(res => {
+        if (res) return res
+        return fetch(e.request)
+        .then(res_net => {
+            caches.open(CACHE_DINAMIC_NAME).then(cache => {
+                cache.put(e.request, res_net).then(() => {
+                    cleanCache(CACHE_DINAMIC_NAME, 5)
+                })
+            })
+            return res_net.clone()
+        }).catch(error => {
+            if (e.request.headers.get('accept').includes('text/html')) return caches.match('/juan_al_u2p5/pages/view_offline.html')
+            if (e.request.url.includes('.jpeg') || e.request.url.includes('.jpg') || e.request.url.includes('.png')) return caches.match('/juan_al_u2p5/img/default.jpg')
+        })
+    })
+    e.respondWith(res)
+
+    // Primero red y despues cache
+    /*
+    const res = fetch(e.request).then(res => {
+
+        if (!res) {
+            return caches.match(e.request)
+            .then(resCache => {
+                return resCache
+            })
+            .catch(error => {
+                console.log(error)
+            })
+        }
+
+        caches.open(CACHE_DINAMIC_NAME).then(cache => {
+            cache.put(e.request, res)
+            cleanCache(CACHE_DINAMIC_NAME, 5)
+        })
+        return res.clone()
+    }).catch( error => {
+        return caches.match(e.request)
+    })
+
+    e.respondWith(res)
+    */
+})
+
